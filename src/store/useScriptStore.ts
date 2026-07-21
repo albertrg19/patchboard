@@ -55,12 +55,22 @@ function persistScript(scripts: Script[], script: Script): void {
 }
 
 
+const getInitialCallFields = (): CallFields => {
+  const saved = localStorage.getItem('patchboard_call_fields');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {}
+  }
+  return { prospectLabel: '', companyLabel: '', agentLabel: '' };
+};
+
 export const useScriptStore = create<ScriptStore & { isLoading: boolean }>((set, get) => ({
   scripts: [],
   activeScriptId: null,
   currentStepId: null,
   callPath: [],
-  callFields: { prospectLabel: '', companyLabel: '', agentLabel: '' },
+  callFields: getInitialCallFields(),
   mode: 'live',
   isLoading: true,
 
@@ -91,7 +101,6 @@ export const useScriptStore = create<ScriptStore & { isLoading: boolean }>((set,
       callPath: activeScript
         ? [{ stepId: activeScript.startStepId }]
         : [],
-      callFields: activeScript?.callFields ?? { prospectLabel: '', companyLabel: '', agentLabel: '' },
       isLoading: false,
     });
   },
@@ -106,7 +115,6 @@ export const useScriptStore = create<ScriptStore & { isLoading: boolean }>((set,
       activeScriptId: id,
       currentStepId: script.startStepId,
       callPath: [{ stepId: script.startStepId }],
-      callFields: script.callFields,
     });
   },
 
@@ -137,7 +145,6 @@ export const useScriptStore = create<ScriptStore & { isLoading: boolean }>((set,
       activeScriptId: id,
       currentStepId: startStepId,
       callPath: [{ stepId: startStepId }],
-      callFields: newScript.callFields,
     });
   },
 
@@ -204,7 +211,6 @@ export const useScriptStore = create<ScriptStore & { isLoading: boolean }>((set,
           activeScriptId: newActive.id,
           currentStepId: newActive.startStepId,
           callPath: [{ stepId: newActive.startStepId }],
-          callFields: newActive.callFields,
         });
       } else {
         set({
@@ -212,7 +218,6 @@ export const useScriptStore = create<ScriptStore & { isLoading: boolean }>((set,
           activeScriptId: null,
           currentStepId: null,
           callPath: [],
-          callFields: { prospectLabel: '', companyLabel: '', agentLabel: '' },
         });
       }
     } else {
@@ -415,7 +420,9 @@ export const useScriptStore = create<ScriptStore & { isLoading: boolean }>((set,
 
   setCallField: (field: keyof CallFields, value: string) => {
     const { callFields } = get();
-    set({ callFields: { ...callFields, [field]: value } });
+    const newFields = { ...callFields, [field]: value };
+    localStorage.setItem('patchboard_call_fields', JSON.stringify(newFields));
+    set({ callFields: newFields });
   },
 
   // --- UI ---
