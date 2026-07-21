@@ -116,7 +116,23 @@ export function StepCard({ step, isStartStep, allSteps, isOrphan, isDeadEnd }: S
                   placeholder="Outcome title"
                   aria-label="Outcome title"
                 />
-                <div className="step-card__sentiment-select">
+                
+                <select
+                  className="step-card__text-input mt-2"
+                  value={step.linkToScriptId || ''}
+                  onChange={(e) => updateStep(step.id, { linkToScriptId: e.target.value || undefined })}
+                  aria-label="Link to script"
+                  style={{ marginTop: '8px', padding: '8px', cursor: 'pointer' }}
+                >
+                  <option value="">-- Optional: Auto-jump to another script --</option>
+                  {scripts.filter(s => s.id !== activeScriptId).map((s) => (
+                    <option key={s.id} value={s.id}>
+                      Jump to: {s.name}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="step-card__sentiment-select" style={{ marginTop: '12px' }}>
                   <button
                     className={`step-card__sentiment-btn ${step.outcomeSentiment === 'positive' ? 'step-card__sentiment-btn--positive-active' : ''}`}
                     onClick={() => updateStep(step.id, { outcomeSentiment: 'positive' })}

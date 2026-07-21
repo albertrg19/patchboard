@@ -13,6 +13,7 @@ export interface Step {
   outcomeSentiment?: 'positive' | 'negative';
   outcomeTitle?: string;
   responses: Response[];
+  linkToScriptId?: string;
 }
 
 export interface CallFields {
