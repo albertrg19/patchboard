@@ -55,10 +55,6 @@ function persistScript(scripts: Script[], script: Script): void {
 }
 
 
-function persistScript(scripts: Script[], script: Script): void {
-  storageService.saveScript(script);
-}
-
 const getInitialCallFields = (): CallFields => {
   const saved = localStorage.getItem('patchboard_call_fields');
   if (saved) {
