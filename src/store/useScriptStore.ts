@@ -54,28 +54,28 @@ function persistScript(scripts: Script[], script: Script): void {
   storageService.saveScript(script);
 }
 
-function seedIfEmpty(): Script[] {
-  const existing = storageService.getScripts();
-  if (existing.length > 0) return existing;
 
-  // First run — seed the default scripts
-  const seeds = [seedStandard, seedStandardPOS, seedNCCM];
-  for (const script of seeds) {
-    storageService.saveScript(script);
-  }
-  return seeds;
-}
-
-export const useScriptStore = create<ScriptStore>((set, get) => ({
+export const useScriptStore = create<ScriptStore & { isLoading: boolean }>((set, get) => ({
   scripts: [],
   activeScriptId: null,
   currentStepId: null,
   callPath: [],
   callFields: { prospectLabel: '', companyLabel: '', agentLabel: '' },
   mode: 'live',
+  isLoading: true,
 
-  loadScripts: () => {
-    const scripts = seedIfEmpty();
+  loadScripts: async () => {
+    set({ isLoading: true });
+    const scripts = await storageService.getScripts();
+    
+    if (scripts.length === 0) {
+      const seeds = [seedStandard, seedStandardPOS, seedNCCM];
+      for (const script of seeds) {
+        storageService.saveScript(script); // Optimistic save
+      }
+      scripts.push(...seeds);
+    }
+
     const savedActiveId = storageService.getActiveScriptId();
     const activeId = scripts.find((s) => s.id === savedActiveId)?.id ?? scripts[0]?.id ?? null;
 
@@ -92,6 +92,7 @@ export const useScriptStore = create<ScriptStore>((set, get) => ({
         ? [{ stepId: activeScript.startStepId }]
         : [],
       callFields: activeScript?.callFields ?? { prospectLabel: '', companyLabel: '', agentLabel: '' },
+      isLoading: false,
     });
   },
 
